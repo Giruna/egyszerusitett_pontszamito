@@ -6,7 +6,7 @@ use App\Http\Controllers\Controller;
 use App\Services\ScoreCalculatorService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
-use Mockery\Exception;
+use Throwable;
 
 class ScoreCalculatorController extends Controller
 
@@ -16,18 +16,24 @@ class ScoreCalculatorController extends Controller
      * @param ScoreCalculatorService $scoreCalculatorService
      * @return JsonResponse
      */
-    public function scoreCalculator(Request $request, ScoreCalculatorService $scoreCalculatorService): JsonResponse
+    public function scoreCalculator(
+        Request $request,
+        ScoreCalculatorService $scoreCalculatorService
+    ): JsonResponse
     {
         try {
-            $result = $scoreCalculatorService->handle($request);
-        } catch (Exception $exception) {
-//            dd($exception);
-//            return [
-//                'ok' => false,
-//                'message' => "hiba",
-//            ];
-        }
 
-        return response()->json($result, $result['status'] ?? 200);
+            $result = $scoreCalculatorService->handle($request);
+
+            return response()->json($result);
+
+        } catch (Throwable $exception) {
+
+            return response()->json([
+                'ok' => false,
+                'message' => "Hiba: ".class_basename($exception),
+            ], 400);
+
+        }
     }
 }
